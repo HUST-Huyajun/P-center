@@ -1,5 +1,5 @@
 #include "Solver.h"
-
+#include "neighbor_move.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -283,9 +283,24 @@ bool Solver::optimize(Solution &sln, ID workerId) {
     centers.Resize(centerNum, Problem::InvalidId);
 
     // TODO[0]: replace the following random assignment with your own algorithm.
+	const int tabu_search_parament_R = 100;
+	const int tabu_sum_step = 3000;
+	//cout << aux.adjMat[0][0] << endl;
+	P_center_action A(nodeNum, centerNum, tabu_search_parament_R, tabu_sum_step, aux.adjMat);
+	vector<int>opt_serves;
+	int opt = A.search(opt_serves);
+
+	/*for (auto serve : opt_serves)
+		sln.add_centers(serve);*/
+	A.reset();
+
+
+
     Sampling sampler(rand, centerNum);
     for (ID c = 0; !timer.isTimeOut() && (c < centerNum); ++c) {
-        ID center = sampler.replaceIndex();
+        //ID center = sampler.replaceIndex();
+		ID center = opt_serves[c];
+
         if (center < 0) { continue; }
         centers[center] = c;
         for (ID n = 0; n < nodeNum; ++n) {

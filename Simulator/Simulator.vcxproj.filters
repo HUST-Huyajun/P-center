@@ -63,6 +63,9 @@
     <ClInclude Include="..\Solver\PCenter.pb.h">
       <Filter>Solver\Protocol</Filter>
     </ClInclude>
+    <ClInclude Include="..\Solver\neighbor_move.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -82,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="..\Solver\PCenter.pb.cc">
       <Filter>Solver\Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Solver\neighbor_move.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
