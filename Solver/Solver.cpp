@@ -205,9 +205,16 @@ void Solver::record() const {
     log << env.friendlyLocalTime() << ","
         << env.rid << ","
         << env.instPath << ","
-        << feasible << "," << (obj - checkerObj) << ","
-        << obj << ","
-        << timer.elapsedSeconds() << ","
+        << feasible << "," << (obj - checkerObj) << ",";
+    if (Problem::isTopologicalGraph(input)) {
+        log << obj << ",";
+    } else {
+        auto oldPrecision = log.precision();
+        log.precision(2);
+        log << fixed << setprecision(2) << (obj / aux.objScale) << ",";
+        log.precision(oldPrecision);
+    }
+    log << timer.elapsedSeconds() << ","
         << mu.physicalMemory << "," << mu.virtualMemory << ","
         << env.randSeed << ","
         << cfg.toBriefStr() << ","
@@ -253,23 +260,40 @@ bool Solver::check(Length &checkerObj) const {
 }
 
 void Solver::init() {
-    aux.adjMat.init(input.graph().nodenum(), input.graph().nodenum());
+    ID nodeNum = input.graph().nodenum();
+
+    aux.adjMat.init(nodeNum, nodeNum);
     fill(aux.adjMat.begin(), aux.adjMat.end(), Problem::MaxDistance);
-    for (ID n = 0; n < input.graph().nodenum(); ++n) { aux.adjMat.at(n, n) = 0; }
-    for (auto e = input.graph().edges().begin(); e != input.graph().edges().end(); ++e) {
-        // only record the last appearance of each edge.
-        aux.adjMat.at(e->source(), e->target()) = e->length();
-        aux.adjMat.at(e->target(), e->source()) = e->length();
+    for (ID n = 0; n < nodeNum; ++n) { aux.adjMat.at(n, n) = 0; }
+
+    if (Problem::isTopologicalGraph(input)) {
+        aux.objScale = Problem::TopologicalGraphObjScale;
+        for (auto e = input.graph().edges().begin(); e != input.graph().edges().end(); ++e) {
+            // only record the last appearance of each edge.
+            aux.adjMat.at(e->source(), e->target()) = e->length();
+            aux.adjMat.at(e->target(), e->source()) = e->length();
+        }
+
+        Timer timer(30s);
+        constexpr bool IsUndirectedGraph = true;
+        IsUndirectedGraph
+            ? Floyd::findAllPairsPaths_symmetric(aux.adjMat)
+            : Floyd::findAllPairsPaths_asymmetric(aux.adjMat);
+        Log(LogSwitch::Preprocess) << "Floyd takes " << timer.elapsedSeconds() << " seconds." << endl;
+    } else { // geometrical graph.
+        aux.objScale = Problem::GeometricalGraphObjScale;
+        for (ID n = 0; n < nodeNum; ++n) {
+            double nx = input.graph().nodes(n).x();
+            double ny = input.graph().nodes(n).y();
+            for (ID m = 0; m < nodeNum; ++m) {
+                if (n == m) { continue; }
+                aux.adjMat.at(n, m) = static_cast<Length>(aux.objScale * hypot(
+                    nx - input.graph().nodes(m).x(), ny - input.graph().nodes(m).y()));
+            }
+        }
     }
 
-    Timer timer(30s);
-    constexpr bool IsUndirectedGraph = true;
-    IsUndirectedGraph
-        ? Floyd::findAllPairsPaths_symmetric(aux.adjMat)
-        : Floyd::findAllPairsPaths_asymmetric(aux.adjMat);
-    Log(LogSwitch::Preprocess) << "Floyd takes " << timer.elapsedSeconds() << " seconds." << endl;
-
-    aux.coverRadii.init(input.graph().nodenum());
+    aux.coverRadii.init(nodeNum);
     fill(aux.coverRadii.begin(), aux.coverRadii.end(), Problem::MaxDistance);
 }
 
@@ -278,7 +302,7 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 
     ID nodeNum = input.graph().nodenum();
     ID centerNum = input.centernum();
-
+	
     // reset solution state.
     bool status = true;
     auto &centers(*sln.mutable_centers());
@@ -287,6 +311,11 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 	
 	int beginindex= sln.solver->env.instPath.find("pmed");
 	int endindex= sln.solver->env.instPath.find('.');
+	if (beginindex == -1) {
+		beginindex = sln.solver->env.instPath.find("tsp");
+		endindex = sln.solver->env.instPath.find("json") - 1;
+	}
+
 	string instname = sln.solver->env.instPath.substr(beginindex,endindex-beginindex);
 
 	const int tabu_search_parament_R = 1000;
@@ -303,20 +332,20 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 
 
     Sampling sampler(rand, centerNum);
-    for (ID c = 0; !timer.isTimeOut() && (c < centerNum); ++c) {
+    for (ID n = 0; !timer.isTimeOut() && (n < nodeNum); ++n) {
         ID center = sampler.replaceIndex();
 		//ID center = opt_serves[c]-1;//ÐÞÕý1µÄÆ«²î
 		//printf("serve=%d ", center + 1);
 
-        if (center < 0) { continue; }
-        centers[center] = opt_serves[c] - 1;
-        for (ID n = 0; n < nodeNum; ++n) {
-            if (aux.adjMat.at(c, n) < aux.coverRadii[n]) { aux.coverRadii[n] = aux.adjMat.at(c, n); }
-        }
+  
+        if (center >= 0) { centers[center] = opt_serves[center] - 1;}
     }
 
     sln.coverRadius = 0; // record obj.
     for (ID n = 0; n < nodeNum; ++n) {
+        for (auto c = centers.begin(); c != centers.end(); ++c) {
+            if (aux.adjMat.at(n, *c) < aux.coverRadii[n]) { aux.coverRadii[n] = aux.adjMat.at(n, *c); }
+        }
         if (sln.coverRadius < aux.coverRadii[n]) { sln.coverRadius = aux.coverRadii[n]; }
     }
 
