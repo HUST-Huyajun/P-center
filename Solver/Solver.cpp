@@ -1,5 +1,6 @@
 #include "Solver.h"
 #include "neighbor_move.h"
+
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -7,6 +8,7 @@
 #include <string>
 #include <thread>
 #include <mutex>
+
 
 #include <cmath>
 
@@ -281,15 +283,19 @@ bool Solver::optimize(Solution &sln, ID workerId) {
     bool status = true;
     auto &centers(*sln.mutable_centers());
     centers.Resize(centerNum, Problem::InvalidId);
-
     // TODO[0]: replace the following random assignment with your own algorithm.
+	
+	int beginindex= sln.solver->env.instPath.find("pmed");
+	int endindex= sln.solver->env.instPath.find('.');
+	string instname = sln.solver->env.instPath.substr(beginindex,endindex-beginindex);
+
 	const int tabu_search_parament_R = 100;
-	const int tabu_sum_step = 3000;
+	const int tabu_sum_step = 300000;
 	//cout << aux.adjMat[0][0] << endl;
-	P_center_action A(nodeNum, centerNum, tabu_search_parament_R, tabu_sum_step, aux.adjMat);
+	P_center_action A(instname,nodeNum, centerNum, tabu_search_parament_R, tabu_sum_step, aux.adjMat);
 	vector<int>opt_serves;
 	int opt = A.search(opt_serves);
-
+	//printf("nums=%d  %d\n",opt_serves.size(),centerNum);
 	/*for (auto serve : opt_serves)
 		sln.add_centers(serve);*/
 	A.reset();
@@ -298,11 +304,12 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 
     Sampling sampler(rand, centerNum);
     for (ID c = 0; !timer.isTimeOut() && (c < centerNum); ++c) {
-        //ID center = sampler.replaceIndex();
-		ID center = opt_serves[c];
+        ID center = sampler.replaceIndex();
+		//ID center = opt_serves[c]-1;//ÐÞÕý1µÄÆ«²î
+		//printf("serve=%d ", center + 1);
 
         if (center < 0) { continue; }
-        centers[center] = c;
+        centers[center] = opt_serves[c] - 1;
         for (ID n = 0; n < nodeNum; ++n) {
             if (aux.adjMat.at(c, n) < aux.coverRadii[n]) { aux.coverRadii[n] = aux.adjMat.at(c, n); }
         }

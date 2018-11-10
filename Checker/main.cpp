@@ -71,6 +71,8 @@ int main(int argc, char *argv[]) {
     // check solution.
     int error = 0;
     // check constraints.
+	printf("nums=%d\n", output.centers().size());
+
     if (output.centers().size() > input.centernum()) { error |= CheckerFlag::TooManyCentersError; }
     // check objective.
     int coverRadius = 0;
