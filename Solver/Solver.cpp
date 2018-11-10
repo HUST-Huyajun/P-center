@@ -289,8 +289,8 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 	int endindex= sln.solver->env.instPath.find('.');
 	string instname = sln.solver->env.instPath.substr(beginindex,endindex-beginindex);
 
-	const int tabu_search_parament_R = 100;
-	const int tabu_sum_step = 300000;
+	const int tabu_search_parament_R = 1000;
+	const int tabu_sum_step = 3000000;
 	//cout << aux.adjMat[0][0] << endl;
 	P_center_action A(instname,nodeNum, centerNum, tabu_search_parament_R, tabu_sum_step, aux.adjMat);
 	vector<int>opt_serves;
