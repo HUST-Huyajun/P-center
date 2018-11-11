@@ -35,7 +35,8 @@ public:
 
             // TODO[0]: fill the submission information.
             submission.set_author("hyj");
-            submission.set_algorithm("tabu_search with tabustep=5000");
+
+            submission.set_algorithm("tabu_search with tabustep=6000");
             submission.set_cpu("Intel Core i5-7400 3.00GHz");
             submission.set_ram("16G 2400MHz");
             submission.set_language("C++");

@@ -302,7 +302,7 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 
     ID nodeNum = input.graph().nodenum();
     ID centerNum = input.centernum();
-
+	
     // reset solution state.
     bool status = true;
     auto &centers(*sln.mutable_centers());
@@ -315,6 +315,7 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 		beginindex = sln.solver->env.instPath.find("tsp");
 		endindex = sln.solver->env.instPath.find("json") - 1;
 	}
+
 	string instname = sln.solver->env.instPath.substr(beginindex,endindex-beginindex);
 
 	const int tabu_search_parament_R = 6000;
@@ -327,7 +328,6 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 	/*for (auto serve : opt_serves)
 		sln.add_centers(serve);*/
 	A.reset();
-
 
 
 	Sampling sampler(rand, centerNum);
