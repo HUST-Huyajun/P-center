@@ -317,7 +317,7 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 	}
 	string instname = sln.solver->env.instPath.substr(beginindex,endindex-beginindex);
 
-	const int tabu_search_parament_R = 5000;
+	const int tabu_search_parament_R = 6000;
 	const int tabu_sum_step = 200000;
 	//cout << aux.adjMat[0][0] << endl;
 	P_center_action A(instname,nodeNum, centerNum, tabu_search_parament_R, tabu_sum_step, aux.adjMat);
