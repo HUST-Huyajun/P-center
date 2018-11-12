@@ -92,6 +92,8 @@ int main(int argc, char *argv[]) {
         cerr << "dijkstra takes " << (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() / 1000.0) << " seconds" << endl;
     } else { // geometrical graph.
         objScale = GeometricalGraphObjScale;
+
+		int shortestuser, shortestserve,shortserve;
         for (int n = 0; n < nodeNum; ++n) {
             double nx = input.graph().nodes(n).x();
             double ny = input.graph().nodes(n).y();
@@ -99,10 +101,25 @@ int main(int argc, char *argv[]) {
             for (auto c = output.centers().begin(); c != output.centers().end(); ++c) { 
                 int dist = static_cast<int>(objScale * hypot(
                     nx - input.graph().nodes(*c).x(), ny - input.graph().nodes(*c).y()));
-                if (dist < shortestDist) { shortestDist = dist; }
+                if (dist < shortestDist) { 
+					shortestDist = dist; 
+					shortserve = *c;
+				}
             }
-            if (coverRadius < shortestDist) { coverRadius = shortestDist; }
+
+            if (coverRadius < shortestDist) { 
+				coverRadius = shortestDist; 
+				shortestserve = shortserve;
+				shortestuser = n;
+
+			}
         }
+		double ux = input.graph().nodes(shortestuser).x();
+		double uy = input.graph().nodes(shortestuser).y();
+		double sx = input.graph().nodes(shortestserve).x();
+		double sy = input.graph().nodes(shortestserve).y();
+		double sqrtans = sqrt((ux - sx)*(ux - sx) + (uy - sy)*(uy - sy));
+		printf("shortestuser = %d(%lf,%lf) shortestserve = %d(%lf,%lf)  sqrtans=%lf\n", shortestuser,ux,uy, shortestserve,sx,sy,sqrtans);
     }
 
     int returnCode = (error == 0) ? coverRadius : ~error;

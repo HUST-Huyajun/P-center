@@ -58,7 +58,14 @@ void node::show() {
 		printf("node %d:first:%d->%d second:%d->%d\n", i, F_first[i], D_first[i], F_second[i], D_second[i]);
 	return;
 }
-
+void Algorithm_paraments::set_tabu_step(int a) { tabu_step = a; }
+void Algorithm_paraments::set_period_threshold(int a) { period_threshold = a; }
+void Algorithm_paraments::set_reward_value(int a) { reward_value = a; }
+void Algorithm_paraments::set_total_iterations(int a) { total_iterations = a; }
+int Algorithm_paraments::get_tabu_step() { return tabu_step; }
+int Algorithm_paraments::get_total_iterations() { return total_iterations; }
+int Algorithm_paraments::get_reward_value() { return reward_value; }
+int Algorithm_paraments::get_period_threshold() { return period_threshold; }
 //serveS m(100,10);
 //node point(100);
 void P_center_action::set_opt() {
@@ -108,12 +115,12 @@ void P_center_action::set_opt() {
 	bestopt["tsp.u1060.p40"] = 102056;
 	bestopt["tsp.u1060.p50"] = 90492;
 	bestopt["tsp.u1060.p60"] = 78117;
-	bestopt["tsp.u1060.p70"] = 71076;
+	bestopt["tsp.u1060.p70"] = 71075;
 	bestopt["tsp.u1060.p80"] = 65216;
-	bestopt["tsp.u1060.p90"] = 60788;
+	bestopt["tsp.u1060.p90"] = 60787;
 	bestopt["tsp.u1060.p100"] = 57001;
 	bestopt["tsp.u1060.p110"] = 53884;
-	bestopt["tsp.u1060.p120"] = 51028;
+	bestopt["tsp.u1060.p120"] = 51027;
 	bestopt["tsp.u1060.p130"] = 49965;
 	bestopt["tsp.u1060.p140"] = 45246;
 	bestopt["tsp.u1060.p150"] = 44701;
@@ -130,18 +137,18 @@ void P_center_action::set_opt() {
 	bestopt["tsp.u1817.p10"] = 45791;
 	bestopt["tsp.u1817.p20"] = 30901;
 	bestopt["tsp.u1817.p30"] = 24099;
-	bestopt["tsp.u1817.p40"] = 20946;
+	bestopt["tsp.u1817.p40"] = 20945;
 	bestopt["tsp.u1817.p50"] = 18491;
-	bestopt["tsp.u1817.p60"] = 16265;
+	bestopt["tsp.u1817.p60"] = 16264;
 	bestopt["tsp.u1817.p70"] = 14811;
 	bestopt["tsp.u1817.p80"] = 13680;
-	bestopt["tsp.u1817.p90"] = 12954;
-	bestopt["tsp.u1817.p100"] = 12701;
+	bestopt["tsp.u1817.p90"] = 12951;
+	bestopt["tsp.u1817.p100"] = 12699;
 	bestopt["tsp.u1817.p110"] = 10925;
-	bestopt["tsp.u1817.p120"] = 10778;
+	bestopt["tsp.u1817.p120"] = 10776;
 	bestopt["tsp.u1817.p130"] = 10775;
 	bestopt["tsp.u1817.p140"] = 10161;
-	bestopt["tsp.u1817.p150"] = 10160;
+	bestopt["tsp.u1817.p150"] = 9244;
 	bestopt["tsp.pcb3038.p10"] = 72854;
 	bestopt["tsp.pcb3038.p20"] = 49304;
 	bestopt["tsp.pcb3038.p30"] = 39350;
@@ -156,15 +163,27 @@ void P_center_action::set_opt() {
 	bestopt["tsp.pcb3038.p400"] = 9751;
 	bestopt["tsp.pcb3038.p450"] = 8896;
 	bestopt["tsp.pcb3038.p500"] = 8500;
+
+	mybetteropt["tsp.u1060.p20"] = 158079;
+	mybetteropt["tsp.u1060.p60"] = 78116;
+	mybetteropt["tsp.u1060.p110"] = 53883;
+	mybetteropt["tsp.u1060.p150"] = 44700;
+	mybetteropt["tsp.rl1323.p10"] = 307729;
+	mybetteropt["tsp.rl1323.p20"] = 201639;
+	mybetteropt["tsp.rl1323.p50"] = 118726;
+	mybetteropt["tsp.u1817.p10"] = 45790;
+	mybetteropt["tsp.u1817.p80"] = 13679;//must better
+	mybetteropt["tsp.u1817.p130"] = 10774;
+	mybetteropt["tsp.u1817.p140"] = 10160;//must better
+	mybetteropt["tsp.pcb3038.p20"] = 49303;
 	return;
 
 }
-P_center_action::P_center_action(string instance_name,int n, int p, int tabu_parament_R, int tabu_sum_step, szx::Arr2D<szx::Length>Graph) :m(n, p), point(n), M(n + 1), G(n + 1, vector<int>(n + 1)), tabu_list(n + 1, vector<int>(n + 1, 0)) {//m,point是自己定义的
+P_center_action::P_center_action(string instance_name,int n, int p, Algorithm_paraments paraments, szx::Arr2D<szx::Length>Graph) :m(n, p), point(n), M(n + 1), G(n + 1, vector<int>(n + 1)), tabu_list(n + 1, vector<int>(n + 1, 0)) {//m,point是自己定义的
 	P_center_action::instname = instance_name;
 	P_center_action::n = n;
 	P_center_action::p = p;
-	P_center_action::R = tabu_parament_R;
-	P_center_action::sum_step = tabu_sum_step;
+	P_center_action::paraments = paraments;
 	//P_center_action::G = Graph;
 	//G.resize(n + 1, vector<int>(n + 1, 0));
 
@@ -428,7 +447,7 @@ int P_center_action::find_pair(int& add, int& remove, int t, int best_opt) {
 
 	if (add == 0) {
 
-		printf("wrong!\n");
+		printf("can't find couple not in tabu!\n");
 		return mintabu;
 	}
 	//printf("add=%d remove=%d tabu=%d\n", add, remove,tabu_list[remove][add]);
@@ -451,14 +470,23 @@ int P_center_action::neighbour_action(int &add, int &remove, int t, int best_opt
 
 //search part
 int P_center_action::get_tt() {
-	return R + rand() % 10 + 1;
+	return paraments.get_tabu_step() + rand() % 10 + 1;
 }
 int P_center_action::search(vector<int>& opt_serves) {
 	BEGIN();
 	int add = 0;
 	int remove = 0;
 	int opt = INT_MAX;
-	for (int t = 1; t <= sum_step; t++) {
+	int t;
+
+
+	const int rewardvalue = paraments.get_reward_value();
+	const int periodvalue = paraments.get_period_threshold();
+	int lasttime = 0;
+	bool optchange = true;//自适应total_iteration参数
+
+	int sum_step = paraments.get_total_iterations();
+	for (t = 1; t <= sum_step; t++) {
 		int mintabu = neighbour_action(add, remove, t, opt);
 
 
@@ -483,32 +511,27 @@ int P_center_action::search(vector<int>& opt_serves) {
 			opt = caculate_opt();
 			printf("t=%d opt=%d bestopt=%d\n", t, opt, bestopt[instname]);
 			opt_serves = m.get_serves();
+			optchange = true;
 			//show_M();
 		}
+		
+		if (opt <= (bestopt[instname]*1.02) && (optchange == true)){
+			optchange = false;
+			int peroid = t - lasttime;
+			if (peroid > periodvalue) {
+				lasttime = t;
+				sum_step += rewardvalue;
+			}
+				
+		}
 
-		if (opt == bestopt[instname]) {
-			//m.show();
-			//int dui = 0;
-			//for (int v = 1; v <= n; v++) {
-			//	int distance = INT_MAX;
-			//	int sserve = 0;
-			//	for (int index = 1; index <= p; index++) {
-			//		int serve = m.S[index];
-			//		if (distance > G[serve][v]) {
-			//			distance = G[serve][v];
-			//			sserve = serve;
-			//		}
-
-
-			//	}
-			//	//printf("distance<user%d,serve%d>=%d\n",v,sserve,distance);
-			//	dui = max(dui, distance);
-			//}
-			//printf("dui=%d\n", dui);
-			//m.show();
-
-			printf("---------------------------------get best solve---------------------------------\n");
-			break;
+		if (mybetteropt.find(instname) == mybetteropt.end()) {
+			if (opt == bestopt[instname])
+				break;
+		}
+		else {
+			if (opt == mybetteropt[instname])
+				break;
 		}
 		//break;
 	/*printf("%d->%d\n",add,remove);
@@ -516,12 +539,18 @@ int P_center_action::search(vector<int>& opt_serves) {
 	//		show_M();
 
 	}
-
+	if (opt == bestopt[instname])
+		printf("-----------------get paper's best solution------------------------total_iteration=%d-----------------------\n", t - 1);
+	else if (opt < bestopt[instname])
+		printf("---------------get better solution than paper---------------------total_iteration=%d-----------------------\n", t - 1);
+	else
+		printf("------------------not get best solution---------------------------total_iteration=%d-----------------------\n", t - 1);
+	reset();
+	std::sort(opt_serves.begin(), opt_serves.end());
 	return opt;
 }
 
 void P_center_action::reset() {
 	m.clear();
 	tabu_list.resize(n + 1, vector<int>(n + 1, 0));
-
 }

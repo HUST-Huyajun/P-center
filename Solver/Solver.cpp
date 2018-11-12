@@ -318,19 +318,24 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 
 	string instname = sln.solver->env.instPath.substr(beginindex,endindex-beginindex);
 
-	const int tabu_search_parament_R = 6000;
-	const int tabu_sum_step = 200000;
+	Algorithm_paraments paraments;
+	paraments.set_period_threshold(50000);
+	paraments.set_reward_value(100000);
+	paraments.set_tabu_step(25000);
+	paraments.set_total_iterations(1000000);
+	
 	//cout << aux.adjMat[0][0] << endl;
-	P_center_action A(instname,nodeNum, centerNum, tabu_search_parament_R, tabu_sum_step, aux.adjMat);
+	P_center_action A(instname, nodeNum, centerNum, paraments, aux.adjMat);
+
 	vector<int>opt_serves;
 	int opt = A.search(opt_serves);
 	//printf("nums=%d  %d\n",opt_serves.size(),centerNum);
 	/*for (auto serve : opt_serves)
 		sln.add_centers(serve);*/
-	A.reset();
+	
 
 
-	Sampling sampler(rand, centerNum);
+	/*Sampling sampler(rand, centerNum);
 
 	for (ID n = 0; !timer.isTimeOut() && (n < nodeNum); ++n) {
 
@@ -338,7 +343,10 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 
 		if (center >= 0) { centers[center] = opt_serves[center] - 1; }
 
-	}
+	}*///不是很懂这一段的逻辑
+
+	for(int i=0;i<centerNum;i++)
+		centers[i]= opt_serves[i] - 1;
 
     sln.coverRadius = 0; // record obj.
     for (ID n = 0; n < nodeNum; ++n) {
