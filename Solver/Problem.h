@@ -36,7 +36,7 @@ public:
             // TODO[0]: fill the submission information.
             submission.set_author("hyj");
 
-            submission.set_algorithm("tabu_search with tabustep=20000 and total_iterations=100000+adaptive100000 if peroid>50000");
+            submission.set_algorithm("11.14_tabu_search with tabustep=n(n-p)/400+rand(step/10) and total_iterations=n(n-p)/10+adaptive n(n-p)/50 if peroid>n(n-p)/30  time_limit=30min");
             submission.set_cpu("Intel Core i5-7400 3.00GHz");
             submission.set_ram("16G 2400MHz");
             submission.set_language("C++");

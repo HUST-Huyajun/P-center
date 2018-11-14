@@ -20,7 +20,7 @@ namespace szx {
 
 // EXTEND[szx][5]: read it from InstanceList.txt.
 static const vector<String> instList({
-    /*"pmed1.n100e198p5",
+    "pmed1.n100e198p5",
     "pmed2.n100e193p10",
     "pmed3.n100e198p10",
     "pmed4.n100e196p20",
@@ -59,8 +59,8 @@ static const vector<String> instList({
     "pmed37.n800e12564p80",
     "pmed38.n900e15898p5",
     "pmed39.n900e15896p10",
-    "pmed40.n900e15879p90",*/
-   /* "tsp.u1060.p10",
+    "pmed40.n900e15879p90",
+    "tsp.u1060.p10",
     "tsp.u1060.p20",
     "tsp.u1060.p30",
     "tsp.u1060.p40",
@@ -99,14 +99,14 @@ static const vector<String> instList({
     "tsp.u1817.p120",
     "tsp.u1817.p130",
     "tsp.u1817.p140",
-    "tsp.u1817.p150",*/
-    /*"tsp.pcb3038.p10",
+    "tsp.u1817.p150",
+    "tsp.pcb3038.p10",
     "tsp.pcb3038.p20",
     "tsp.pcb3038.p30",
     "tsp.pcb3038.p40",
     "tsp.pcb3038.p50",
     "tsp.pcb3038.p100",
-    "tsp.pcb3038.p150",*/
+    "tsp.pcb3038.p150",
     "tsp.pcb3038.p200",
     "tsp.pcb3038.p250",
     "tsp.pcb3038.p300",

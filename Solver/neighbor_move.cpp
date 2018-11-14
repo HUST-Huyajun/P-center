@@ -470,7 +470,7 @@ int P_center_action::neighbour_action(int &add, int &remove, int t, int best_opt
 
 //search part
 int P_center_action::get_tt() {
-	return paraments.get_tabu_step() + rand() % 10 + 1;
+	return paraments.get_tabu_step() + rand() % (paraments.get_tabu_step() / 10) + 1;
 }
 int P_center_action::search(vector<int>& opt_serves) {
 	BEGIN();
@@ -486,6 +486,11 @@ int P_center_action::search(vector<int>& opt_serves) {
 	bool optchange = true;//自适应total_iteration参数
 
 	int sum_step = paraments.get_total_iterations();
+
+	time_t start, stop;
+	start = time(NULL);
+
+
 	for (t = 1; t <= sum_step; t++) {
 		int mintabu = neighbour_action(add, remove, t, opt);
 
@@ -509,20 +514,20 @@ int P_center_action::search(vector<int>& opt_serves) {
 
 		if (opt > caculate_opt()) {
 			opt = caculate_opt();
-			printf("t=%d opt=%d bestopt=%d\n", t, opt, bestopt[instname]);
+			printf("t=%d opt=%d bestopt=%d tabu_step=%d total_iterations=%d\n", t, opt, bestopt[instname], paraments.get_tabu_step(), paraments.get_total_iterations());
 			opt_serves = m.get_serves();
 			optchange = true;
 			//show_M();
 		}
-		
-		if (opt <= (bestopt[instname]*1.02) && (optchange == true)){
+
+		if (opt <= (bestopt[instname] * 1.02) && (optchange == true)) {
 			optchange = false;
 			int peroid = t - lasttime;
 			if (peroid > periodvalue) {
 				lasttime = t;
 				sum_step += rewardvalue;
 			}
-				
+
 		}
 
 		if (mybetteropt.find(instname) == mybetteropt.end()) {
@@ -531,6 +536,12 @@ int P_center_action::search(vector<int>& opt_serves) {
 		}
 		else {
 			if (opt == mybetteropt[instname])
+				break;
+		}
+
+		if (t % 10000 == 0) {
+			stop = time(NULL);
+			if (stop - start >= 60*30)//60s*30min
 				break;
 		}
 		//break;
