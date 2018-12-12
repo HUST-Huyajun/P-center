@@ -33,19 +33,42 @@ public:
 };
 class Algorithm_paraments {
 private:
-	int  tabu_step;
+	string tabu_type;//禁忌类型 couple代表动作对禁忌 double代表双禁忌
+	int tabu_step;
+	int k_of_Nwk;
 	int total_iterations;
 	int reward_value;
 	int period_threshold;
+	int seed;
 public:
 	void set_tabu_step(int a);
 	void set_total_iterations(int a);
 	void set_reward_value(int a);
 	void set_period_threshold(int a);
+	void set_tabu_type(string a);
+	void set_k(int a);
+	void set_seed(int a);
 	int get_tabu_step();
 	int get_total_iterations();
 	int get_reward_value();
 	int get_period_threshold();
+	string get_tabu_type();
+	int get_k();
+	int get_seed();
+};
+class tabu {
+private:
+	Algorithm_paraments paraments;
+	vector<vector<int>>tabu_list_couple;
+	vector<int>tabu_list_serve;
+	vector<int>tabu_list_user;
+	int get_tt();
+public:
+	tabu(int n,Algorithm_paraments a);
+	bool whether_tabu(int add, int remove, int t);
+	void modify_tabu(int add, int remove, int t);
+	int get_mintabu(int add, int remove,int mintabu);//用于全部禁忌后加速迭代
+	void clear(int n);
 };
 class P_center_action {
 public:
@@ -77,9 +100,8 @@ public:
 	int find_pair(int& add, int& remove, int t, int best_opt);
 	int neighbour_action(int &add, int &remove, int t, int best_opt);
 public://search
-	vector<vector<int>>tabu_list;
+	tabu tabu_info;
 	Algorithm_paraments paraments;
-	int get_tt();
 	int search(vector<int>& opt_serves);
 public:
 	void reset();

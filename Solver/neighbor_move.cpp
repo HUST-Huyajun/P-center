@@ -60,12 +60,90 @@ void node::show() {
 }
 void Algorithm_paraments::set_tabu_step(int a) { tabu_step = a; }
 void Algorithm_paraments::set_period_threshold(int a) { period_threshold = a; }
+void Algorithm_paraments::set_tabu_type(string a) { 
+	if (a == "couple" || a == "double")
+		tabu_type = a;
+	else
+		printf("no this tabu type!\n");
+}
+void Algorithm_paraments::set_k(int a) { k_of_Nwk = a; }
+void Algorithm_paraments::set_seed(int a){seed = a;}
 void Algorithm_paraments::set_reward_value(int a) { reward_value = a; }
 void Algorithm_paraments::set_total_iterations(int a) { total_iterations = a; }
 int Algorithm_paraments::get_tabu_step() { return tabu_step; }
 int Algorithm_paraments::get_total_iterations() { return total_iterations; }
 int Algorithm_paraments::get_reward_value() { return reward_value; }
 int Algorithm_paraments::get_period_threshold() { return period_threshold; }
+string Algorithm_paraments::get_tabu_type(){return tabu_type;}
+int Algorithm_paraments::get_k(){return k_of_Nwk;}
+int Algorithm_paraments::get_seed(){return seed;}
+tabu::tabu(int n, Algorithm_paraments a) {
+	paraments = a;
+	if (a.get_tabu_type() == "couple") {
+		tabu_list_couple.resize(n + 1, vector<int>(n + 1, 0));
+		tabu_list_serve.resize(0, 0);
+		tabu_list_user.resize(0, 0);
+	}
+	else if (a.get_tabu_type() == "double") {
+		tabu_list_couple.resize(0, vector<int>(0, 0));
+		tabu_list_serve.resize(n + 1, 0);
+		tabu_list_user.resize(n + 1, 0);
+	}
+	else {
+		printf("no this tabu type!\n");
+	}
+	return;
+}
+int tabu::get_tt() {
+	return paraments.get_tabu_step() + rand() % (paraments.get_tabu_step() / 10) + 1;
+}
+bool tabu::whether_tabu(int add, int remove, int t) {
+	if (paraments.get_tabu_type() == "couple") {
+		return tabu_list_couple[remove][add] <= t;//加入禁忌 tabu_list[remove][add]
+	}
+	else if (paraments.get_tabu_type() == "double") {
+		return (tabu_list_serve[add] <= t) && (tabu_list_user[remove] <= t);
+		//return (tabu_list_serve[add] <= t) || (tabu_list_user[remove] <= t);
+	}
+	else {
+		printf("no this tabu type!\n");
+		return false;
+	}
+}
+void tabu::modify_tabu(int add, int remove, int t)
+{
+	int tabu_step = get_tt() + t;
+	tabu_list_couple[remove][add] = tabu_step;
+	tabu_list_couple[add][remove] = tabu_step;
+}
+int tabu::get_mintabu(int add, int remove,int mintabu)
+{
+	if (paraments.get_tabu_type() == "couple") {
+		mintabu = min(mintabu, tabu_list_couple[remove][add]);
+		mintabu = min(mintabu, tabu_list_couple[add][remove]);
+	}
+	else if (paraments.get_tabu_type() == "double") {//待思考
+		mintabu = min(mintabu, tabu_list_serve[add]);
+		mintabu = min(mintabu, tabu_list_user[remove]);
+	}
+	else {
+		printf("no this tabu type!\n");
+	}
+	return mintabu;
+}
+void tabu::clear(int n)
+{
+	if (paraments.get_tabu_type() == "couple") {
+		tabu_list_couple.resize(n + 1, vector<int>(n + 1, 0));
+	}
+	else if (paraments.get_tabu_type() == "double") {//待思考
+		tabu_list_serve.resize(n + 1, 0);
+		tabu_list_user.resize(n + 1, 0);
+	}
+	else {
+		printf("no this tabu type!\n");
+	}
+}
 //serveS m(100,10);
 //node point(100);
 void P_center_action::set_opt() {
@@ -179,7 +257,7 @@ void P_center_action::set_opt() {
 	return;
 
 }
-P_center_action::P_center_action(string instance_name,int n, int p, Algorithm_paraments paraments, szx::Arr2D<szx::Length>Graph) :m(n, p), point(n), M(n + 1), G(n + 1, vector<int>(n + 1)), tabu_list(n + 1, vector<int>(n + 1, 0)) {//m,point是自己定义的
+P_center_action::P_center_action(string instance_name,int n, int p, Algorithm_paraments paraments, szx::Arr2D<szx::Length>Graph) :m(n, p), point(n), M(n + 1), G(n + 1, vector<int>(n + 1)), tabu_info(n,paraments) {//m,point是自己定义的
 	P_center_action::instname = instance_name;
 	P_center_action::n = n;
 	P_center_action::p = p;
@@ -325,6 +403,8 @@ void P_center_action::caculate_M(int newserve) {
 	return;
 }
 void P_center_action::BEGIN() {
+	srand(paraments.get_seed());//随机种子
+
 	int firstp = rand() % n + 1;
 	int maxlen = 0;
 	int secondp = 0;
@@ -400,7 +480,7 @@ int P_center_action::find_pair(int& add, int& remove, int t, int best_opt) {
 			int f = m.S[i];
 			if (f == newserve)
 				continue;//避免加入和删除同一个节点；
-			if (tabu_list[f][newserve] <= t) {//加入禁忌 tabu_list[remove][add]
+			if (tabu_info.whether_tabu(newserve,f,t)) {
 
 				if (M[f] < C) {
 					C = M[f];
@@ -432,8 +512,7 @@ int P_center_action::find_pair(int& add, int& remove, int t, int best_opt) {
 				}
 			}
 			else {
-				mintabu = min(mintabu, tabu_list[f][newserve]);
-				mintabu = min(mintabu, tabu_list[newserve][f]);
+				mintabu = tabu_info.get_mintabu(newserve, f, mintabu);
 			}
 
 		}
@@ -469,9 +548,6 @@ int P_center_action::neighbour_action(int &add, int &remove, int t, int best_opt
 
 
 //search part
-int P_center_action::get_tt() {
-	return paraments.get_tabu_step() + rand() % (paraments.get_tabu_step() / 10) + 1;
-}
 int P_center_action::search(vector<int>& opt_serves) {
 	BEGIN();
 	int add = 0;
@@ -500,14 +576,13 @@ int P_center_action::search(vector<int>& opt_serves) {
 			t = mintabu;
 			continue;
 		}
-		if (tabu_list[remove][add] <= t) {
+		if (tabu_info.whether_tabu(add,remove,t)) {
 		}
 		else {
 			//printf("tabu! add=%d remove=%d\n", add, remove);
 		}
-		int tabu_step = get_tt() + t;
-		tabu_list[remove][add] = tabu_step;
-		tabu_list[add][remove] = tabu_step;
+		tabu_info.modify_tabu(add, remove, t);
+		
 
 
 
@@ -563,5 +638,7 @@ int P_center_action::search(vector<int>& opt_serves) {
 
 void P_center_action::reset() {
 	m.clear();
-	tabu_list.resize(n + 1, vector<int>(n + 1, 0));
+	tabu_info.clear(n);
 }
+
+

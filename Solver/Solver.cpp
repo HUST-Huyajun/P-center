@@ -321,9 +321,12 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 	Algorithm_paraments paraments;
 	paraments.set_period_threshold(nodeNum*(nodeNum - centerNum) / 30);
 	paraments.set_reward_value(nodeNum*(nodeNum - centerNum) / 50);
-	paraments.set_tabu_step(nodeNum*(nodeNum - centerNum)/400);
+	paraments.set_tabu_step(10000);
 	paraments.set_total_iterations(nodeNum*(nodeNum-centerNum));
-	
+	paraments.set_tabu_type("couple");
+	//paraments.set_seed((unsigned)time(NULL));
+	paraments.set_seed(1);
+
 	//cout << aux.adjMat[0][0] << endl;
 	P_center_action A(instname, nodeNum, centerNum, paraments, aux.adjMat);
 
