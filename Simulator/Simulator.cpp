@@ -60,7 +60,7 @@ static const vector<String> instList({
     "pmed38.n900e15898p5",
     "pmed39.n900e15896p10",
     "pmed40.n900e15879p90",
-    "tsp.u1060.p10",
+    /*"tsp.u1060.p10",
     "tsp.u1060.p20",
     "tsp.u1060.p30",
     "tsp.u1060.p40",
@@ -113,7 +113,7 @@ static const vector<String> instList({
     "tsp.pcb3038.p350",
     "tsp.pcb3038.p400",
     "tsp.pcb3038.p450",
-    "tsp.pcb3038.p500"
+    "tsp.pcb3038.p500"*/
 });
 
 void Simulator::initDefaultEnvironment() {
@@ -197,7 +197,7 @@ void Simulator::run(const String &envPath) {
 void Simulator::debug() {
     Task task;
     task.instSet = "";
-    task.instId = "pmed30.n600e7042p200";
+    task.instId = "tsp.rl1323.p70";
     task.randSeed = "1500972793";
     //task.randSeed = to_string(1546575779);
     task.timeout = "180";

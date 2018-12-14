@@ -40,6 +40,7 @@ private:
 	int reward_value;
 	int period_threshold;
 	int seed;
+	int time_limits;
 public:
 	void set_tabu_step(int a);
 	void set_total_iterations(int a);
@@ -48,6 +49,7 @@ public:
 	void set_tabu_type(string a);
 	void set_k(int a);
 	void set_seed(int a);
+	void set_time_limits(int a);
 	int get_tabu_step();
 	int get_total_iterations();
 	int get_reward_value();
@@ -55,6 +57,7 @@ public:
 	string get_tabu_type();
 	int get_k();
 	int get_seed();
+	int get_time_limits();
 };
 class tabu {
 private:

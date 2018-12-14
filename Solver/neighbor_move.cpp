@@ -7,6 +7,7 @@
 #include<vector>
 #include<algorithm>
 #include<unordered_map>
+#include<map>
 using namespace std;
 serveS::serveS(int n, int p) :whether(n + 1, 0), index(n + 1, 0), S(p + 2, 0) {
 	len = 0;
@@ -68,6 +69,7 @@ void Algorithm_paraments::set_tabu_type(string a) {
 }
 void Algorithm_paraments::set_k(int a) { k_of_Nwk = a; }
 void Algorithm_paraments::set_seed(int a){seed = a;}
+void Algorithm_paraments::set_time_limits(int a){time_limits = a;}
 void Algorithm_paraments::set_reward_value(int a) { reward_value = a; }
 void Algorithm_paraments::set_total_iterations(int a) { total_iterations = a; }
 int Algorithm_paraments::get_tabu_step() { return tabu_step; }
@@ -77,6 +79,7 @@ int Algorithm_paraments::get_period_threshold() { return period_threshold; }
 string Algorithm_paraments::get_tabu_type(){return tabu_type;}
 int Algorithm_paraments::get_k(){return k_of_Nwk;}
 int Algorithm_paraments::get_seed(){return seed;}
+int Algorithm_paraments::get_time_limits(){return time_limits;}
 tabu::tabu(int n, Algorithm_paraments a) {
 	paraments = a;
 	if (a.get_tabu_type() == "couple") {
@@ -321,11 +324,40 @@ int P_center_action::select_Nk(int i) {
 }
 vector<int> P_center_action::give_Nwk(int w) {
 	int distance = point.D_first[w];
+	//vector<int>ret1(0, 0);
 	vector<int>ret(0, 0);
+	map<int, vector<int>>retmap;
+
 	for (int k = 1; k <= n; k++)
 		if (G[w][k] < distance) {
-			ret.push_back(k);
+			//ret1.push_back(k);
+			if (retmap.find(G[w][k]) != retmap.end())
+				retmap[G[w][k]].push_back(k);
+			else
+				retmap[G[w][k]] = vector<int>(1, k);
+			//retmap[G[w][k]].push_back(k);
 		}
+
+	map<int, vector<int>>::iterator iter;
+	int k = paraments.get_k();
+	int nowlen = 0;
+
+	for (iter = retmap.begin(); iter != retmap.end(); iter++) {
+		nowlen += iter->second.size();
+		ret.insert(ret.end(), iter->second.begin(), iter->second.end());
+		if (nowlen >= k)
+			break;
+	}
+	/*cout << "ret1: ";
+	for (auto i : ret1)
+		cout <<"["<< i <<": "<<G[w][i]<<"]";
+	cout << endl;
+
+	cout << "ret: ";
+	for (auto i : ret)
+		cout << i << ' ';
+	cout << endl<<endl;*/
+	
 	return ret;
 }
 void P_center_action::add_facility(int newserve) {
@@ -616,7 +648,7 @@ int P_center_action::search(vector<int>& opt_serves) {
 
 		if (t % 10000 == 0) {
 			stop = time(NULL);
-			if (stop - start >= 60*30)//60s*30min
+			if (stop - start >= paraments.get_time_limits())//60s*30min
 				break;
 		}
 		//break;

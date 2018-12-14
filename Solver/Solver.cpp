@@ -326,6 +326,8 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 	paraments.set_tabu_type("couple");
 	//paraments.set_seed((unsigned)time(NULL));
 	paraments.set_seed(1);
+	paraments.set_k(100);
+	paraments.set_time_limits(10);//µ¥Î»£ºs
 
 	//cout << aux.adjMat[0][0] << endl;
 	P_center_action A(instname, nodeNum, centerNum, paraments, aux.adjMat);
