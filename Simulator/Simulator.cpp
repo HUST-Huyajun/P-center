@@ -198,6 +198,7 @@ void Simulator::debug() {
     Task task;
     task.instSet = "";
     task.instId = "tsp.rl1323.p70";
+	//task.instId = "pmed1.n100e198p5";
     task.randSeed = "1500972793";
     //task.randSeed = to_string(1546575779);
     task.timeout = "180";

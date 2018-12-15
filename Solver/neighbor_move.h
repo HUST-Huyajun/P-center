@@ -105,9 +105,16 @@ public:
 public://search
 	tabu tabu_info;
 	Algorithm_paraments paraments;
-	int search(vector<int>& opt_serves);
+	vector<int> search(vector<int>& opt_serves);
 public:
 	void reset();
+};
+class autosearch {
+private:
+	void outmylog(ofstream outFile,Algorithm_paraments paraments, vector<int> runinfo);
+public:
+	void search(string instance_name, int n, int p,szx::Arr2D<szx::Length>Graph);
+	vector<int> run(string instance_name, int n, int p, szx::Arr2D<szx::Length>Graph);
 };
 #pragma once
 

@@ -318,22 +318,13 @@ bool Solver::optimize(Solution &sln, ID workerId) {
 
 	string instname = sln.solver->env.instPath.substr(beginindex,endindex-beginindex);
 
-	Algorithm_paraments paraments;
-	paraments.set_period_threshold(nodeNum*(nodeNum - centerNum) / 30);
-	paraments.set_reward_value(nodeNum*(nodeNum - centerNum) / 50);
-	paraments.set_tabu_step(10000);
-	paraments.set_total_iterations(nodeNum*(nodeNum-centerNum));
-	paraments.set_tabu_type("couple");
-	//paraments.set_seed((unsigned)time(NULL));
-	paraments.set_seed(1);
-	paraments.set_k(100);
-	paraments.set_time_limits(10);//µ¥Î»£ºs
-
-	//cout << aux.adjMat[0][0] << endl;
-	P_center_action A(instname, nodeNum, centerNum, paraments, aux.adjMat);
-
 	vector<int>opt_serves;
-	int opt = A.search(opt_serves);
+	autosearch B;
+	opt_serves=B.run(instname, nodeNum, centerNum, aux.adjMat);
+
+	//B.search(instname, nodeNum, centerNum, aux.adjMat);
+
+	
 	//printf("nums=%d  %d\n",opt_serves.size(),centerNum);
 	/*for (auto serve : opt_serves)
 		sln.add_centers(serve);*/

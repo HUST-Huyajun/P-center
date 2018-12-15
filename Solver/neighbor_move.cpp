@@ -8,6 +8,10 @@
 #include<algorithm>
 #include<unordered_map>
 #include<map>
+
+
+#include <fstream>
+#include <sstream>
 using namespace std;
 serveS::serveS(int n, int p) :whether(n + 1, 0), index(n + 1, 0), S(p + 2, 0) {
 	len = 0;
@@ -98,7 +102,7 @@ tabu::tabu(int n, Algorithm_paraments a) {
 	return;
 }
 int tabu::get_tt() {
-	return paraments.get_tabu_step() + rand() % (paraments.get_tabu_step() / 10) + 1;
+	return paraments.get_tabu_step() + rand() % (paraments.get_tabu_step() / 3) ;//引入疏散性
 }
 bool tabu::whether_tabu(int add, int remove, int t) {
 	if (paraments.get_tabu_type() == "couple") {
@@ -339,11 +343,11 @@ vector<int> P_center_action::give_Nwk(int w) {
 		}
 
 	map<int, vector<int>>::iterator iter;
-	int k = paraments.get_k();
+	int k = paraments.get_k()+rand()%10;//引入疏散性
 	int nowlen = 0;
 
 	for (iter = retmap.begin(); iter != retmap.end(); iter++) {
-		nowlen += iter->second.size();
+		nowlen += int(iter->second.size());
 		ret.insert(ret.end(), iter->second.begin(), iter->second.end());
 		if (nowlen >= k)
 			break;
@@ -580,12 +584,13 @@ int P_center_action::neighbour_action(int &add, int &remove, int t, int best_opt
 
 
 //search part
-int P_center_action::search(vector<int>& opt_serves) {
+vector<int> P_center_action::search(vector<int>& opt_serves) {
 	BEGIN();
 	int add = 0;
 	int remove = 0;
 	int opt = INT_MAX;
 	int t;
+	int itera_use_opt;
 
 
 	const int rewardvalue = paraments.get_reward_value();
@@ -623,6 +628,7 @@ int P_center_action::search(vector<int>& opt_serves) {
 			opt = caculate_opt();
 			printf("t=%d opt=%d bestopt=%d tabu_step=%d total_iterations=%d\n", t, opt, bestopt[instname], paraments.get_tabu_step(), paraments.get_total_iterations());
 			opt_serves = m.get_serves();
+			itera_use_opt = t - 1;
 			optchange = true;
 			//show_M();
 		}
@@ -646,7 +652,7 @@ int P_center_action::search(vector<int>& opt_serves) {
 				break;
 		}
 
-		if (t % 10000 == 0) {
+		if (1) {
 			stop = time(NULL);
 			if (stop - start >= paraments.get_time_limits())//60s*30min
 				break;
@@ -665,12 +671,104 @@ int P_center_action::search(vector<int>& opt_serves) {
 		printf("------------------not get best solution---------------------------total_iteration=%d-----------------------\n", t - 1);
 	reset();
 	std::sort(opt_serves.begin(), opt_serves.end());
-	return opt;
+	vector<int> info;
+	info.push_back(opt);
+	info.push_back(t - 1);//run_total_iteration
+	info.push_back(itera_use_opt);//iteration_use_to_get_opt
+	return info;
 }
-
 void P_center_action::reset() {
 	m.clear();
 	tabu_info.clear(n);
 }
+
+void autosearch::outmylog(ofstream outFile,Algorithm_paraments a, vector<int>runinfo)
+{
+	
+	
+}
+
+void autosearch::search(string instance_name, int n, int p, szx::Arr2D<szx::Length>Graph)
+{
+	ofstream outFile;
+	outFile.open("hyjlog.csv", ios::app); // 记录测试数据
+	if (!outFile) {
+		cout << "--------------file open failed!!--------------" << endl;
+		return;
+	}
+	outFile << "name,n,p,time,seed,tabu_type,iteration,iter_get_opt,tabu_step,k,opt_ans" << endl;
+
+	for(double step=1000;step<100000;step*=1.25)
+		for (double k = 10; k<=100; k*=1.12) 
+			for(int seed=1;seed<=10000;seed*=100)
+		{
+
+			Algorithm_paraments paraments;
+			paraments.set_period_threshold(n*(n - p) / 30);
+			paraments.set_reward_value(n*(n - p) / 50);
+			paraments.set_tabu_step(int(step));
+			paraments.set_total_iterations(n*(n - p));
+			paraments.set_tabu_type("couple");
+
+			paraments.set_seed(seed);
+			//paraments.set_seed((unsigned)time(NULL));
+		
+			paraments.set_k(int(k));
+			paraments.set_time_limits(30);//单位：s
+
+			//cout << aux.adjMat[0][0] << endl;
+			P_center_action A(instance_name, n, p, paraments, Graph);
+
+			vector<int>opt_serves;
+			vector<int> info = A.search(opt_serves);
+
+			Algorithm_paraments &a = paraments;
+			outFile <<instance_name<<','<<n<<","<<p<<","<< a.get_time_limits() << ',' << a.get_seed() << ',' << a.get_tabu_type() << "," << info[1] << ',' \
+				<< info[2] << "," << a.get_tabu_step() << ',' << a.get_k() << ',' << info[0] << endl;
+
+		}
+	
+
+	outFile.close();
+
+	cout << "aotu search has done!\n";
+}
+
+vector<int> autosearch::run(string instance_name, int n, int p, szx::Arr2D<szx::Length> Graph)
+{
+	ofstream outFile;
+	outFile.open("hyjlog.csv", ios::app); // 记录测试数据
+	if (!outFile) {
+		cout << "--------------file open failed!!--------------" << endl;
+		return vector<int>(0,0);
+	}
+	outFile << "name,n,p,time,seed,tabu_type,iteration,iter_get_opt,tabu_step,k,opt_ans,run!!!" << endl;
+
+
+	Algorithm_paraments paraments;
+	paraments.set_period_threshold(n*(n - p) / 30);
+	paraments.set_reward_value(n*(n - p) / 50);
+	paraments.set_tabu_step(3000);
+	paraments.set_total_iterations(n*(n - p));
+	paraments.set_tabu_type("couple");
+	//paraments.set_seed((unsigned)time(NULL));
+	paraments.set_seed(0);
+	paraments.set_k(40);
+	paraments.set_time_limits(60*10);//单位：s
+
+	//cout << aux.adjMat[0][0] << endl;
+	P_center_action A(instance_name, n, p, paraments, Graph);
+	
+
+
+	vector<int>opt_serves;
+	vector<int> info = A.search(opt_serves);
+
+	Algorithm_paraments &a = paraments;
+	outFile << instance_name << ',' << n << "," << p << "," << a.get_time_limits() << ',' << a.get_seed() << ',' << a.get_tabu_type() << "," << info[1] << ',' \
+		<< info[2] << "," << a.get_tabu_step() << ',' << a.get_k() << ',' << info[0] << endl;
+	return opt_serves;
+}
+
 
 
